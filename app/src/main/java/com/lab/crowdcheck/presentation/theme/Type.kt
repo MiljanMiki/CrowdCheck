@@ -1,4 +1,4 @@
-package com.lab.crowdcheck.ui.theme
+package com.lab.crowdcheck.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

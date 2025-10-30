@@ -1,4 +1,4 @@
-package com.lab.crowdcheck.ui.theme
+package com.lab.crowdcheck.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
