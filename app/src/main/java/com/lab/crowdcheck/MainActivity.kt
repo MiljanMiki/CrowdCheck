@@ -11,18 +11,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.firebase.firestore.FirebaseFirestore
+import com.lab.crowdcheck.presentation.NavigationHost
 import com.lab.crowdcheck.presentation.theme.CrowdCheckTheme
+import com.lab.crowdcheck.presentation.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val firestore = FirebaseFirestore.getInstance()
+    private val authViewModel = AuthViewModel(firestore)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CrowdCheckTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                    NavigationHost(
+                        firestore,
+                        authViewModel,
+                        Modifier.padding(innerPadding)
                     )
                 }
             }

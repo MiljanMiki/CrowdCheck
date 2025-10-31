@@ -58,8 +58,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+//********COMPOSE***************
+    //za navigation
+    implementation("androidx.navigation:navigation-compose:2.9.5")
 
-    //********COMPOSE***************
     implementation("androidx.compose.material3:material3")
 
     // Android Studio Preview support
@@ -79,8 +81,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
 
 
-//********COMPOSE***************
-
+//********KRAJ ZA COMPOSE***************
+//*******FIREBASE***********************
     //FIREBASE
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
 
@@ -91,5 +93,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 
+//*******KRAJ ZA FIREBASE***********************
+// ***********ZA SLIKE*******************
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
 }
