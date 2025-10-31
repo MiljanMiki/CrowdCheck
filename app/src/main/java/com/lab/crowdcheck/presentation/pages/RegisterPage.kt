@@ -1,7 +1,9 @@
 package com.lab.crowdcheck.presentation.pages
 
+import android.Manifest
 import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +36,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -60,33 +63,48 @@ fun RegisterPage(
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
+    //kad slikam sliku i sacuvam u imageUri, slika se ne sacuva
+    //pa je potreban ovaj middlestate holder
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+
     val context = LocalContext.current
 
     val user by authViewModel.userState.collectAsState()
     val error by authViewModel.errorMessage.collectAsState()
     val loading by authViewModel.loading.collectAsState()
 
+    //pokrece galeriju
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            imageUri = uri
+        }
+    )
+
+    //pokrece kameru
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success: Boolean ->
             if (success) {
-                // The image URI is already set by the contract, no need to do anything here
-                // if you used the URI provided to the launch call.
+                imageUri = tempCameraUri
+            }else{
+                Toast.makeText(context,"Odbijena permisija za galeriju",Toast.LENGTH_SHORT).show()
+
             }
         }
     )
 
-    // Launcher for requesting camera permission
+    //permisija za kameru
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted: Boolean ->
             if (isGranted) {
                 val uri = createImageUri(context)
-                imageUri = uri
+                tempCameraUri = uri
                 cameraLauncher.launch(uri)
             } else {
-                // Handle permission denial
-                // You can show a toast or a snackbar here
+                Toast.makeText(context,"Odbijena permisija za kameru",Toast.LENGTH_SHORT).show()
             }
         }
     )
@@ -143,6 +161,40 @@ fun RegisterPage(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
+
+
+        ImagePickerCircle(
+            imageUri = imageUri,
+            onClick = { showDialog = true }
+        )
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Odaberite opciju") },
+                text = { Text("Odaberite sliku iz galerije ili uslikajte novu.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog = false
+                            galleryLauncher.launch("image/*")
+                        }
+                    ) {
+                        Text("Galerija")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog = false
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    ) {
+                        Text("Camera")
+                    }
+                })
+        }
+
         Button(
             onClick = { authViewModel.signUp(email, password, ime, prezime, username, brojTelefona,"url") },
             enabled = !loading
@@ -172,7 +224,6 @@ fun ImagePickerCircle(imageUri: Uri?, onClick: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         if (imageUri != null) {
-            // Display the selected image
             AsyncImage(
                 model = imageUri,
                 contentDescription = "Selected profile picture",
@@ -180,7 +231,6 @@ fun ImagePickerCircle(imageUri: Uri?, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
         } else {
-            // Display placeholder text
             Text(
                 text = "Odaberite/slikajte fotografiju",
                 textAlign = TextAlign.Center,
@@ -197,9 +247,9 @@ private fun createImageUri(context: Context): Uri {
     val imageFileName = "JPEG_" + timestamp + "_"
     val storageDir : File? = context.externalCacheDir
     val image = File.createTempFile(
-        imageFileName,  /* prefix */
-        ".jpg",         /* suffix */
-        storageDir      /* directory */
+        imageFileName,
+        ".jpg",
+        storageDir
     )
     return androidx.core.content.FileProvider.getUriForFile(
         Objects.requireNonNull(context),
